@@ -122,9 +122,10 @@ def render_filters(df):
     selected_status = st.sidebar.selectbox("Status", status_options)
     
     # Program Area Filter
-    # Strip whitespace to avoid duplicates
+    # Strip whitespace to avoid duplicates and remove 'nan'
     df['Program Area'] = df['Program Area'].astype(str).str.strip()
-    area_options = ["All"] + sorted(df['Program Area'].unique().tolist())
+    unique_areas = sorted([a for a in df['Program Area'].unique().tolist() if a.lower() != 'nan' and a != ''])
+    area_options = ["All"] + unique_areas
     selected_area = st.sidebar.selectbox("Program Area", area_options)
     
     # Search
