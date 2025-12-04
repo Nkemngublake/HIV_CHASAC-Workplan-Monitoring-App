@@ -18,6 +18,14 @@ class DataManager:
             if 'Comments' in df.columns:
                 df['Comments'] = df['Comments'].fillna("").astype(str)
             
+            # Data Cleaning: Remove empty rows and columns
+            df.dropna(how='all', inplace=True) # Drop rows where all elements are NaN
+            df.dropna(axis=1, how='all', inplace=True) # Drop columns where all elements are NaN
+            
+            # Remove rows where 'Program Area' is NaN or empty (critical for stats)
+            if 'Program Area' in df.columns:
+                df = df[df['Program Area'].notna() & (df['Program Area'].astype(str).str.strip() != '')]
+            
             # Check for migration to Regional structure
             if 'Region' not in df.columns:
                 df = DataManager._migrate_to_regions(df)
