@@ -78,10 +78,45 @@ def _display_metrics_row(df):
     with col4:
         st.metric("Delayed", delayed, delta_color="inverse")
 
+def render_login():
+    """Renders a login screen."""
+    if 'user_email' not in st.session_state:
+        st.session_state.user_email = None
+
+    if not st.session_state.user_email:
+        col1, col2, col3 = st.columns([1, 2, 1])
+        with col2:
+            st.markdown("## 🔒 Login Required")
+            st.info("Please enter your email address to access the tracker. This is used to track changes.")
+            email = st.text_input("Email Address")
+            if st.button("Login", type="primary"):
+                if email and "@" in email:
+                    st.session_state.user_email = email
+                    st.rerun()
+                else:
+                    st.error("Please enter a valid email address.")
+        return False
+    
+    # Show logged in user in sidebar
+    st.sidebar.markdown(f"👤 **{st.session_state.user_email}**")
+    if st.sidebar.button("Logout"):
+        st.session_state.user_email = None
+        st.rerun()
+        
+    return True
+
 def render_filters(df):
-    """Renders sidebar filters and returns the filtered dataframe."""
+    """Renders sidebar filters and returns the filtered dataframe and selected region."""
     st.sidebar.header("Filters")
     
+    # Region Filter (New)
+    # Ensure Region column exists (it should after migration)
+    if 'Region' in df.columns:
+        region_options = ["All"] + sorted(df['Region'].unique().tolist())
+        selected_region = st.sidebar.selectbox("Region", region_options)
+    else:
+        selected_region = "All"
+
     # Status Filter
     status_options = ["All"] + sorted(df['Status'].unique().tolist())
     selected_status = st.sidebar.selectbox("Status", status_options)
@@ -98,6 +133,9 @@ def render_filters(df):
     # Apply Filters
     filtered_df = df.copy()
     
+    if selected_region != "All":
+        filtered_df = filtered_df[filtered_df['Region'] == selected_region]
+    
     if selected_status != "All":
         filtered_df = filtered_df[filtered_df['Status'] == selected_status]
         
@@ -108,7 +146,7 @@ def render_filters(df):
         filtered_df = filtered_df[filtered_df['Activities'].astype(str).str.contains(search_query, case=False, na=False) | 
                                   filtered_df['ACMS Sub-Activities'].astype(str).str.contains(search_query, case=False, na=False)]
                                   
-    return filtered_df
+    return filtered_df, selected_region
 
 def render_financial_summary(df):
     """Displays financial summary statistics."""
