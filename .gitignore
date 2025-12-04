@@ -36,6 +36,7 @@ venv.bak/
 
 # Excel / Data Files (Generated or potentially sensitive)
 *.xlsx
+!Full_Workplan_Tracker.xlsx
 *.xls
 *.csv
 WorkPlan/
